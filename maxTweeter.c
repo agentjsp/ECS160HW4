@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
 	while (getline(&row, &row_len, fp) > -1) {
 		
 		printf("Current row: %s\n", row);
-		// Empty line found
+		// empty line found
 		if(row[strspn(row, " \n")] == '\0'){
 			empty_line = true;
 			continue;
@@ -161,20 +161,20 @@ int main(int argc, char** argv) {
 		//parse line token by token
 		while ((token = strsep(&row_cpy, ","))) {
 			printf("Current token: %s \n", token);
-			// In case gotten line doesn't match with header
-			if(token == NULL){
-				if(curr_col < total_col){
-					printf("Invalid input format\n");
-					exit(1);
-				}
-			}
-			if (curr_col == tweeter_col) {
+				
+			if (curr_col == tweeter_col){
 				printf("launching add_name\n");
 				add_name(&list_size, unquote(token));
 			}
 			curr_col++;
 		}
 		curr_row++;
+		// count of parsed field doesn't match header count
+		if(curr_col != total_col){
+			printf("Fields don't match header\n");
+			exit(1);
+		}
+
 		// found more content after finding empty line
 		if(empty_line){
 			printf("Invalid input format\n");
