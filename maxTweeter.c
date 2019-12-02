@@ -129,6 +129,7 @@ int main(int argc, char** argv) {
 	size_t row_len = 1024, curr_row = 0, list_size = 0;
 	char* row = malloc(row_len);
 	int total_col = 0;
+	bool empty_line = false;
 	
 	// Process the header to get tweeter column
 	if(getline(&row, &row_len, fp) > -1){
@@ -143,7 +144,14 @@ int main(int argc, char** argv) {
 
 	//parse csv file line by line
 	while (getline(&row, &row_len, fp) > -1) {
+		
 		printf("Current row: %s\n", row);
+		// Empty line found
+		if(row[strspn(row, " \n")] == '\0'){
+			empty_line = true;
+			continue;
+		}
+
 		char* row_cpy;
 		char* token;
 		size_t curr_col = 0;
@@ -167,6 +175,11 @@ int main(int argc, char** argv) {
 			curr_col++;
 		}
 		curr_row++;
+		// found more content after finding empty line
+		if(empty_line){
+			printf("Invalid input format\n");
+                	exit(1);
+		}
 	}
 
 	free(row);
