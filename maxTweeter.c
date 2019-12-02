@@ -75,9 +75,12 @@ char* unquote(char* name)
 	}
 
 	// Get the name between the quotes
-	strtok(name, "\"");
+	char *new_name = malloc(str_len - 2);
+	for(int i = 0; i < (str_len - 2); i++){
+		new_name[i] = name[i + 1];
+	}
 
-	return strtok(name, "\"");
+	return new_name; 
 }
 
 int process_header(char *row_cpy)
