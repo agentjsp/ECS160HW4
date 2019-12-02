@@ -42,7 +42,45 @@ int add_name(size_t* list_size, char* name)
 	return 0;
 }
 
-void process_header(char *row_cpy)
+char* unquote(char* name)
+{	
+	int str_len = strlen(name);
+
+	if(name == NULL){
+		printf("Invalid input format\n");
+		exit(1);
+	}
+
+	// Make sure it ends in quotes if it should	
+	if(has_quotes){
+		if((name[0] != '\"') || (name[str_len - 1] != '\'')){
+                	printf("Invalid input format\n");
+                	exit(1);
+        	}
+	}
+
+	if(!has_quotes){
+		if((name[0] == '\"') && (name[str_len - 1] == '\"')){
+                	printf("Invalid input format\n");
+                	exit(1);
+        	}
+		return name;
+	}
+
+
+	// Case where name is just "" and it has quotes
+	if(str_len - 2 <= 0){
+		printf("Invalid input format\n");
+		exit(1);
+	}
+
+	// Get the name between the quotes
+	strtok(name, "\"");
+
+	return strtok(name, "\"");
+}
+
+int process_header(char *row_cpy)
 {
 	if(row_cpy == NULL){
 		printf("No header\n");
@@ -72,7 +110,7 @@ void process_header(char *row_cpy)
 		exit(1);
 	}
 
-	return;
+	return curr_col;
 }
 
 int main(int argc, char** argv) {
@@ -90,11 +128,12 @@ int main(int argc, char** argv) {
 
 	size_t row_len = 1024, curr_row = 0, list_size = 0;
 	char* row = malloc(row_len);
+	int total_col = 0;
 	
 	// Process the header to get tweeter column
 	if(getline(&row, &row_len, fp) > -1){
 		char* row_cpy = row;
-		process_header(row_cpy);
+		total_col = process_header(row_cpy);
 		
 	}
 	else{
@@ -114,9 +153,16 @@ int main(int argc, char** argv) {
 		//parse line token by token
 		while ((token = strsep(&row_cpy, ","))) {
 			printf("Current token: %s \n", token);
+			// In case gotten line doesn't match with header
+			if(token == NULL){
+				if(curr_col < total_col){
+					printf("Invalid input format\n");
+					exit(1);
+				}
+			}
 			if (curr_col == tweeter_col) {
 				printf("launching add_name\n");
-				add_name(&list_size, token);
+				add_name(&list_size, unquote(token));
 			}
 			curr_col++;
 		}
