@@ -18,19 +18,15 @@ tweeter list[MAX_TWEETS];
 
 int add_name(size_t* list_size, char* name)
 {
-	//printf("add_name: list size is currently %ld\n", *list_size);
 	for(int i = 0; i < *list_size; i++){
 		// They are the same name
-		//printf("add_name: comparing names %s and %s at %d \n", list[i].name, name, i);
 		if(strcmp(list[i].name, name) == 0){
-			//printf("add_name: name match\n");
 			list[i].count++;
 			return 1;
 		}
 	}
 
 	if(*list_size < MAX_TWEETS){
-		//printf("add_name: adding list entry %s at %ld\n", name, *list_size);
 		list[*list_size].name = malloc(sizeof(char) * strlen(name));
 		strcpy(list[*list_size].name, name);
 		list[*list_size].count = 1;
@@ -177,7 +173,6 @@ int main(int argc, char** argv) {
 	//parse csv file line by line
 	while (getline(&row, &row_len, fp) > -1) {
 		
-		//printf("Current row: %s\n", row);
 		// empty line found
 		if(row[strspn(row, " \n")] == '\0'){
 			empty_line = true;
@@ -192,10 +187,8 @@ int main(int argc, char** argv) {
 
 		//parse line token by token
 		while ((token = strsep(&row_cpy, ","))) {
-			//printf("Current token: %s \n", token);
 				
 			if (curr_col == tweeter_col){
-				//printf("launching add_name\n");
 				add_name(&list_size, unquote(token));
 			}
 			curr_col++;
