@@ -53,7 +53,7 @@ char* unquote(char* name)
 
 	// Make sure it ends in quotes if it should	
 	if(has_quotes){
-		if((name[0] != '\"') || (name[str_len - 1] != '\'')){
+		if((name[0] != '\"') || (name[str_len - 1] != '\"')){
                 	printf("Invalid input format\n");
                 	exit(1);
         	}
