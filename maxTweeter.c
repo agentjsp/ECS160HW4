@@ -1,11 +1,13 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "stdbool.h"
 
 #define ROW_LENGTH 1024
 #define MAX_TWEETS 20000
 
 size_t tweeter_col = 99;
+bool has_quotes;
 
 typedef struct tweeter{
 	char *name;
@@ -16,7 +18,7 @@ tweeter list[MAX_TWEETS];
 
 int add_name(size_t* list_size, char* name)
 {
-	printf("add_name: list size is currently %d\n", *list_size);
+	printf("add_name: list size is currently %ld\n", *list_size);
 	for(int i = 0; i < *list_size; i++){
 		// They are the same name
 		printf("add_name: comparing names %s and %s at %d \n", list[i].name, name, i);
@@ -28,7 +30,7 @@ int add_name(size_t* list_size, char* name)
 	}
 
 	if(*list_size < MAX_TWEETS){
-		printf("add_name: adding list entry %s at %d\n", name, *list_size);
+		printf("add_name: adding list entry %s at %ld\n", name, *list_size);
 		list[*list_size].name = malloc(sizeof(char) * strlen(name));
 		strcpy(list[*list_size].name, name);
 		list[*list_size].count = 1;
@@ -38,7 +40,40 @@ int add_name(size_t* list_size, char* name)
 		exit(1);
 	}
 	return 0;
-}	
+}
+
+void process_header(char *row_cpy)
+{
+	if(row_cpy == NULL){
+		printf("No header\n");
+		exit(1);
+	}
+
+	int name_occurence = 0;
+	int curr_col = 0;
+	char* token;
+	while ((token = strsep(&row_cpy, ","))) {
+        	if (strcmp(token, "name") == 0) {
+			tweeter_col = curr_col;
+			name_occurence++;
+			has_quotes = false;
+		}
+
+		if(strcmp(token, "\"name\"") == 0){
+			tweeter_col = curr_col;
+			name_occurence++;
+			has_quotes = true;
+		}
+		curr_col++;
+	}
+
+	if(name_occurence > 1){
+		printf("Invalid input format\n");
+		exit(1);
+	}
+
+	return;
+}
 
 int main(int argc, char** argv) {
 	if (argc < 1) {
@@ -55,6 +90,17 @@ int main(int argc, char** argv) {
 
 	size_t row_len = 1024, curr_row = 0, list_size = 0;
 	char* row = malloc(row_len);
+	
+	// Process the header to get tweeter column
+	if(getline(&row, &row_len, fp) > -1){
+		char* row_cpy = row;
+		process_header(row_cpy);
+		
+	}
+	else{
+		printf("Couldn't get header\n");
+		exit(1);
+	}
 
 	//parse csv file line by line
 	while (getline(&row, &row_len, fp) > -1) {
@@ -66,18 +112,19 @@ int main(int argc, char** argv) {
 		row_cpy = row;
 
 		//parse line token by token
-		while (token = strsep(&row_cpy, ",")) {
+		while ((token = strsep(&row_cpy, ","))) {
 			printf("Current token: %s \n", token);
-			if (curr_row == 0) { 
-			//parse header row to find column indice of tweeter names
-				if (strcmp(token, "name") == 0) {
-					tweeter_col = curr_col;
+			if (curr_col == tweeter_col) {
+				printf("launching add_name\n");
+				//if header is quoted, check for valid
+				//quote configurations on column entries
+				if (has_quotes) {
+					if ((token[0] != '"') || (token[strlen(token)-1] != '"')) {
+						printf("Invalid input format\n");
+						return 1;
+					}
 				}
-			} else {
-				if (curr_col == tweeter_col) {
-					printf("launching add_name\n");
-					add_name(&list_size, token);
-				}
+				add_name(&list_size, token);
 			}
 			curr_col++;
 		}
