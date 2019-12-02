@@ -68,7 +68,8 @@ int main(int argc, char** argv) {
 		//parse line token by token
 		while (token = strsep(&row_cpy, ",")) {
 			printf("Current token: %s \n", token);
-			if (curr_row == 0) {
+			if (curr_row == 0) { 
+			//parse header row to find column indice of tweeter names
 				if (strcmp(token, "name") == 0) {
 					tweeter_col = curr_col;
 				}
